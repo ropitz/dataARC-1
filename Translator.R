@@ -1,5 +1,7 @@
 arc.dataconvert <- function(json,export=FALSE){
 
+oldw <- getOption("warn")
+options(warn = -1)
 
 library(gdata) # for the trim function
 library(jsonlite)
@@ -10,6 +12,8 @@ library(dplyr)
 library(tidyr)
 library(purrr)
 library(data.table)
+
+options(warn = oldw)
 
 dataARC_raw_input <- fromJSON(json, simplifyDataFrame = TRUE)
 
@@ -58,11 +62,16 @@ dt[, relationships_lookup_resource_en := NULL]
 #joins the data back into the manipulated datatable
 dt <- recs[dt,on="_id",all=TRUE]
 
+oldw <- getOption("warn")
+options(warn = -1)
+
 #break the data apart using the ID and dataset variables as the ID variables
 #keeping only properties and the resources
 dt1 <- melt(dt, id.vars=c("_id","dataset"),
             measure.vars = names(dt)[str_detect(names(dt),
                                                 "properties|relationships_lookup_resource_en")])
+
+options(warn = oldw)
 #remove "properties" prefix from subfields
 dt1[, variable := str_replace(variable,"properties.","")]
 #remove NA rows from the datatable
